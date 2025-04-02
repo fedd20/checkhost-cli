@@ -2,7 +2,7 @@ name: Cross-Platform Go Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
@@ -26,20 +26,33 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.24'
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
 
-    - name: Set environment variables
-      run: |
-        echo "GOOS=$(if [[ '${{ matrix.os }}' == *'macos'* ]]; then echo 'darwin'; elif [[ '${{ matrix.os }}' == *'windows'* ]]; then echo 'windows'; else echo 'linux'; fi)" >> $GITHUB_ENV
-        echo "GOARCH=${{ matrix.arch }}" >> $GITHUB_ENV
+      - name: Set environment variables
+        run: |
+          if [[ "${{ runner.os }}" == "Linux" ]]; then
+            echo "GOOS=linux" >> $GITHUB_ENV
+          elif [[ "${{ runner.os }}" == "macOS" ]]; then
+            echo "GOOS=darwin" >> $GITHUB_ENV
+          else
+            echo "GOOS=windows" >> $GITHUB_ENV
+          fi
+          echo "GOARCH=${{ matrix.arch }}" >> $GITHUB_ENV
+        shell: bash
 
-    - name: Install dependencies
-      run: go mod tidy && go mod download
+      - name: Install dependencies
+        run: go mod tidy && go mod download
 
-    - name: Build for ${{ env.GOOS }}-${{ env.GOARCH }}
-      run: go build -o checkhost-${{ env.GOOS }}-${{ env.GOARCH }} -v
+      - name: Build for ${{ env.GOOS }}-${{ env.GOARCH }}
+        run: go build -o checkhost-${{ env.GOOS }}-${{ env.GOARCH }} -v
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: checkhost-${{ env.GOOS }}-${{ env.GOARCH }}
+          path: checkhost-${{ env.GOOS }}-${{ env.GOARCH }}
