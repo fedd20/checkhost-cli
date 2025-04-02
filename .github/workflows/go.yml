@@ -1,0 +1,45 @@
+name: Cross-Platform Go Build
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        arch: [amd64, arm64]
+        include:
+          - os: macos-latest
+            arch: amd64
+          - os: macos-latest
+            arch: arm64
+          - os: windows-latest
+            arch: amd64
+          - os: windows-latest
+            arch: arm64
+          - os: ubuntu-latest
+            arch: amd64
+          - os: ubuntu-latest
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24'
+
+    - name: Set environment variables
+      run: |
+        echo "GOOS=$(if [[ '${{ matrix.os }}' == *'macos'* ]]; then echo 'darwin'; elif [[ '${{ matrix.os }}' == *'windows'* ]]; then echo 'windows'; else echo 'linux'; fi)" >> $GITHUB_ENV
+        echo "GOARCH=${{ matrix.arch }}" >> $GITHUB_ENV
+
+    - name: Install dependencies
+      run: go mod tidy && go mod download
+
+    - name: Build for ${{ env.GOOS }}-${{ env.GOARCH }}
+      run: go build -o checkhost-${{ env.GOOS }}-${{ env.GOARCH }} -v ./...
