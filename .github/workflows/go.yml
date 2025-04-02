@@ -42,4 +42,4 @@ jobs:
       run: go mod tidy && go mod download
 
     - name: Build for ${{ env.GOOS }}-${{ env.GOARCH }}
-      run: go build -o checkhost-${{ env.GOOS }}-${{ env.GOARCH }} -v ./...
+      run: go build -o checkhost-${{ env.GOOS }}-${{ env.GOARCH }} -v
