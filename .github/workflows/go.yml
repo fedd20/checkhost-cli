@@ -48,7 +48,7 @@ jobs:
       - name: Install dependencies
         run: go mod tidy && go mod download
 
-      - name: Build for ${{ env.GOOS }}-${{ env.GOARCH }}
+      - name: Build artifact
         run: go build -o checkhost-${{ env.GOOS }}-${{ env.GOARCH }} -v
 
       - name: Upload build artifact
