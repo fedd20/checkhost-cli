@@ -50,11 +50,12 @@ jobs:
 
       - name: Build artifact
         run: |
-          if [[ "${{ env.GOOS }}" == "windows" ]]; then
+          if [ "${{ runner.os }}" == "Windows" ]; then
             go build -o checkhost-${{ env.GOOS }}-${{ env.GOARCH }}.exe -v
           else
             go build -o checkhost-${{ env.GOOS }}-${{ env.GOARCH }} -v
           fi
+        shell: bash
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
