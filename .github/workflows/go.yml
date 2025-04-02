@@ -52,7 +52,7 @@ jobs:
         run: go build -o checkhost-${{ env.GOOS }}-${{ env.GOARCH }} -v
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: checkhost-${{ env.GOOS }}-${{ env.GOARCH }}
           path: checkhost-${{ env.GOOS }}-${{ env.GOARCH }}
