@@ -14,6 +14,7 @@ import (
 var (
 	source string
 	debug  bool
+	input string
 )
 
 var rootCmd = &cobra.Command{
@@ -24,22 +25,19 @@ var rootCmd = &cobra.Command{
 		log := logger.GetLoggerInstance(debug)
 
 		var lookupIp string
-		if len(args) == 0 {
-			log.Info().Msg("Looking up public IP address of machine...")
+		if input == "" {
+			log.Info().Msg("No input provided. Using empty lookupIp.")
 			lookupIp = ""
 		} else {
-			lookupIp = args[0]
-			if lookupIp == "" {
-				log.Fatal().Msg("Input cannot be empty.")
-			}
+			lookupIp = input
 
-			if net.ParseIP(lookupIp) == nil {
-				url, err := url.Parse(lookupIp)
+			if net.ParseIP(input) == nil {
+				url, err := url.Parse(input)
 				cobra.CheckErr(err)
 
 				domain := url.String()
 				if domain == "" {
-					log.Fatal().Str("lookupIp", lookupIp).Err(err).Msg("Can't parse URL")
+					log.Fatal().Str("input", input).Err(err).Msg("Can't parse URL")
 				}
 
 				ips := utils.DnsQuery(domain)
@@ -57,18 +55,21 @@ var rootCmd = &cobra.Command{
 
 		switch source {
 		case "ipinfo":
+			log.Info().Str("lookupIp", lookupIp).Msg("Calling IpInfoRequest...")
 			result, err := apis.IpInfoRequest(lookupIp)
 			if err != nil {
 				log.Fatal().Err(err)
 			}
 			utils.BeautyPrint(config, result, lookupIp == "")
 		case "ipapi":
+			log.Info().Str("lookupIp", lookupIp).Msg("Calling IpApiRequest...")
 			result, err := apis.IpApiRequest(lookupIp)
 			if err != nil {
 				log.Fatal().Err(err)
 			}
 			utils.BeautyPrint(config, result, lookupIp == "")
 		case "cloudflare":
+			log.Info().Str("lookupIp", lookupIp).Msg("Calling CloudflareApiRequest...")
 			if lookupIp != "" {
 				log.Warn().Msg("Please note that Cloudflare API can only lookup your IP address.")
 			}
@@ -89,6 +90,7 @@ func Execute() error {
 	rootCmd.AddCommand(configCmd)
 
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "Show debug logs")
+	rootCmd.PersistentFlags().StringVarP(&input, "input", "i", "", "Input domain or IP here.")
 	rootCmd.PersistentFlags().StringVar(&source, "source", "ipapi", "Choose a source to retrive IP info.")
 	return rootCmd.Execute()
 }
